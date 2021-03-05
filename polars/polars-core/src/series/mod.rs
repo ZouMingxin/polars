@@ -2,6 +2,7 @@
 pub use crate::prelude::ChunkCompare;
 use crate::prelude::*;
 use arrow::{array::ArrayRef, buffer::Buffer};
+
 pub(crate) mod arithmetic;
 mod comparison;
 pub mod implementations;
@@ -20,8 +21,8 @@ use std::sync::Arc;
 
 pub trait IntoSeries {
     fn into_series(self) -> Series
-    where
-        Self: Sized;
+        where
+            Self: Sized;
 }
 
 pub(crate) mod private {
@@ -355,7 +356,7 @@ pub trait SeriesTrait: Send + Sync + private::PrivateSeries {
     /// # Safety
     ///
     /// Out of bounds access doesn't Error but will return a Null value
-    fn take_iter(&self, _iter: &mut dyn Iterator<Item = usize>) -> Series {
+    fn take_iter(&self, _iter: &mut dyn Iterator<Item=usize>) -> Series {
         unimplemented!()
     }
 
@@ -364,7 +365,7 @@ pub trait SeriesTrait: Send + Sync + private::PrivateSeries {
     /// # Safety
     ///
     /// This doesn't check any bounds or null validity.
-    unsafe fn take_iter_unchecked(&self, _iter: &mut dyn Iterator<Item = usize>) -> Series {
+    unsafe fn take_iter_unchecked(&self, _iter: &mut dyn Iterator<Item=usize>) -> Series {
         unimplemented!()
     }
 
@@ -383,7 +384,7 @@ pub trait SeriesTrait: Send + Sync + private::PrivateSeries {
     /// This doesn't check any bounds or null validity.
     unsafe fn take_opt_iter_unchecked(
         &self,
-        _iter: &mut dyn Iterator<Item = Option<usize>>,
+        _iter: &mut dyn Iterator<Item=Option<usize>>,
     ) -> Series {
         unimplemented!()
     }
@@ -393,7 +394,7 @@ pub trait SeriesTrait: Send + Sync + private::PrivateSeries {
     /// # Safety
     ///
     /// Out of bounds access doesn't Error but will return a Null value
-    fn take_opt_iter(&self, _iter: &mut dyn Iterator<Item = Option<usize>>) -> Series {
+    fn take_opt_iter(&self, _iter: &mut dyn Iterator<Item=Option<usize>>) -> Series {
         unimplemented!()
     }
 
@@ -830,8 +831,8 @@ pub trait SeriesTrait: Send + Sync + private::PrivateSeries {
 
 impl<'a> (dyn SeriesTrait + 'a) {
     pub fn unpack<N: 'static>(&self) -> Result<&ChunkedArray<N>>
-    where
-        N: PolarsDataType,
+        where
+            N: PolarsDataType,
     {
         if &N::get_dtype() == self.dtype() {
             Ok(self.as_ref())
@@ -979,8 +980,8 @@ impl Series {
 
     /// Cast to some primitive type.
     pub fn cast<N>(&self) -> Result<Self>
-    where
-        N: PolarsDataType,
+        where
+            N: PolarsDataType,
     {
         self.0.cast_with_datatype(&N::get_dtype())
     }
@@ -991,8 +992,8 @@ impl Series {
     /// assert_eq!(s.sum(), Some(6));
     /// ```
     pub fn sum<T>(&self) -> Option<T>
-    where
-        T: NumCast,
+        where
+            T: NumCast,
     {
         self.sum_as_series()
             .cast::<Float64Type>()
@@ -1008,8 +1009,8 @@ impl Series {
     /// assert_eq!(s.min(), Some(1));
     /// ```
     pub fn min<T>(&self) -> Option<T>
-    where
-        T: NumCast,
+        where
+            T: NumCast,
     {
         self.min_as_series()
             .cast::<Float64Type>()
@@ -1025,8 +1026,8 @@ impl Series {
     /// assert_eq!(s.max(), Some(3));
     /// ```
     pub fn max<T>(&self) -> Option<T>
-    where
-        T: NumCast,
+        where
+            T: NumCast,
     {
         self.max_as_series()
             .cast::<Float64Type>()
@@ -1037,8 +1038,8 @@ impl Series {
     /// Returns the mean value in the array
     /// Returns an option because the array is nullable.
     pub fn mean<T>(&self) -> Option<T>
-    where
-        T: NumCast,
+        where
+            T: NumCast,
     {
         self.cast::<Float64Type>()
             .ok()
@@ -1056,7 +1057,7 @@ impl Series {
                     "explode not supported for Series with dtype {:?}",
                     self.dtype()
                 )
-                .into(),
+                    .into(),
             )),
         }
     }
@@ -1071,7 +1072,7 @@ impl Series {
                     "is_nan not supported for series with dtype {:?}",
                     self.dtype()
                 )
-                .into(),
+                    .into(),
             )),
         }
     }
@@ -1086,7 +1087,7 @@ impl Series {
                     "is_nan not supported for series with dtype {:?}",
                     self.dtype()
                 )
-                .into(),
+                    .into(),
             )),
         }
     }
@@ -1101,7 +1102,7 @@ impl Series {
                     "is_nan not supported for series with dtype {:?}",
                     self.dtype()
                 )
-                .into(),
+                    .into(),
             )),
         }
     }
@@ -1116,7 +1117,7 @@ impl Series {
                     "is_nan not supported for series with dtype {:?}",
                     self.dtype()
                 )
-                .into(),
+                    .into(),
             )),
         }
     }
@@ -1156,6 +1157,7 @@ impl<'a, T: AsRef<[&'a str]>> NamedFrom<T, [&'a str]> for Series {
         Utf8Chunked::new_from_slice(name, v.as_ref()).into_series()
     }
 }
+
 impl<'a, T: AsRef<[Option<&'a str>]>> NamedFrom<T, [Option<&'a str>]> for Series {
     fn new(name: &str, v: T) -> Self {
         Utf8Chunked::new_from_opt_slice(name, v.as_ref()).into_series()
@@ -1245,7 +1247,7 @@ impl std::convert::TryFrom<(&str, Vec<ArrayRef>)> for Series {
                                 true,
                             ))),
                         )
-                        .unwrap()
+                            .unwrap()
                     })
                     .collect_vec();
                 Ok(ListChunked::new_from_chunks(name, chunks).into_series())
@@ -1286,6 +1288,9 @@ impl std::convert::TryFrom<(&str, Vec<ArrayRef>)> for Series {
                 let len = chunks.iter().fold(0, |acc, array| acc + array.len());
                 Ok(Int8Chunked::full_null(name, len).into_series())
             }
+            ArrowDataType::Decimal(_, _) => {
+                Ok(Float32Chunked::new_from_chunks(name, chunks).into_series())
+            }
             dt => Err(PolarsError::InvalidOperation(
                 format!("Cannot create polars series from {:?} type", dt).into(),
             )),
@@ -1309,9 +1314,9 @@ impl Default for Series {
 }
 
 impl<T> From<ChunkedArray<T>> for Series
-where
-    T: PolarsDataType,
-    ChunkedArray<T>: IntoSeries,
+    where
+        T: PolarsDataType,
+        ChunkedArray<T>: IntoSeries,
 {
     fn from(ca: ChunkedArray<T>) -> Self {
         ca.into_series()
