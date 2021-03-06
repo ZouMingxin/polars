@@ -1291,6 +1291,9 @@ impl std::convert::TryFrom<(&str, Vec<ArrayRef>)> for Series {
             ArrowDataType::Decimal(_, _) => {
                 Ok(Float32Chunked::new_from_chunks(name, chunks).into_series())
             }
+            ArrowDataType::Struct(_) => {
+                Ok(CategoricalChunked::new_from_chunks(name, chunks).into_series())
+            }
             dt => Err(PolarsError::InvalidOperation(
                 format!("Cannot create polars series from {:?} type", dt).into(),
             )),
